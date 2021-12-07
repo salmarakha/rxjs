@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize } from 'rxjs';
+import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize, Subscription, connectable } from 'rxjs';
 
 @Component({
   selector: 'app-test-rxjs',
@@ -35,6 +35,18 @@ export class TestRxjsComponent implements OnInit {
   // obsrvable of static values
   staticValueObservable = of("anything", ["you", "want"], 23, true, {cool: "stuff"});
 
+  /* Cold vs Hot observables */
+  // Cold observable example
+  cold = new Observable(observer => {
+    observer.next(Math.random());
+  });
+
+  // Hot observable example
+  private randomNum = Math.random();
+  hot = new Observable(observer => {
+    observer.next(this.randomNum);
+  })
+
 
   constructor() { }
 
@@ -51,13 +63,32 @@ export class TestRxjsComponent implements OnInit {
       .subscribe(() => console.log("Timer finished!"));
 
     // store subscription in a variable to allow unsubscription
-    const intervalSubscription = this.observableInterval.subscribe(i => console.log(i));
+    const intervalSubscription: Subscription = this.observableInterval.subscribe(i => console.log(i));
 
     this.staticValueObservable.subscribe(value => console.log(value));
 
     setTimeout(() => {
       intervalSubscription.unsubscribe();
-    }, 10000)
+    }, 10000);
+
+    /* these result in two different values because observable does not
+      generate a random number until subscribed to it (producer inside the observable)*/
+    console.log("Cold Observable");
+    this.cold.subscribe(value => console.log(`Subscriber A: ${value}`));
+    this.cold.subscribe(value => console.log(`Subscriber B: ${value}`));
+
+    /* these output the same value because the producer is not contained inside the observable */
+    console.log("Hot Observable");
+    this.hot.subscribe(value => console.log(`Subscriber A: ${value}`));
+    this.hot.subscribe(value => console.log(`Subscriber B: ${value}`));
+
+    /* Convert a cold observable to hot observable by calling publish
+      publish will allow subscribers to share the same values */
+    console.log("Cold observable converted to Hot");
+    const hotFromCold = connectable(this.cold); // publish operator is the same but it's depricated
+    hotFromCold.subscribe(value => console.log(`Subscriber A: ${value}`));
+    hotFromCold.subscribe(value => console.log(`Subscriber B: ${value}`));
+    hotFromCold.connect(); // there won't be an output if connect() is not called
 
   }
 
