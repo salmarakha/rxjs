@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, Observable, Subscriber, from, timer, interval, of } from 'rxjs';
+import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-test-rxjs',
@@ -45,11 +45,19 @@ export class TestRxjsComponent implements OnInit {
 
     this.observablePromise.subscribe(value => console.log(value));
 
-    this.observableTimer.subscribe(done => console.log("Done!"));
+    this.observableTimer
+      // finalize executes when observable completes
+      .pipe(finalize(() => console.log("Observable is complete.")))
+      .subscribe(() => console.log("Timer finished!"));
 
-    this.observableInterval.subscribe(i => console.log(i));
+    // store subscription in a variable to allow unsubscription
+    const intervalSubscription = this.observableInterval.subscribe(i => console.log(i));
 
     this.staticValueObservable.subscribe(value => console.log(value));
+
+    setTimeout(() => {
+      intervalSubscription.unsubscribe();
+    }, 10000)
 
   }
 
