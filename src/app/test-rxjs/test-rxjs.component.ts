@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize, Subscription, connectable, map } from 'rxjs';
+import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize, Subscription, connectable, map, tap } from 'rxjs';
 
 @Component({
   selector: 'app-test-rxjs',
@@ -96,6 +96,14 @@ export class TestRxjsComponent implements OnInit {
       .pipe(map(num => Math.log(num)))
       .subscribe(value => console.log(value));
 
+    // Tap / do
+    // allows running code at any point in the observable
+    numbers
+      .pipe(
+        tap(value => console.log("Values before map", value)),
+        map(num => Math.log(num))
+      )
+      .subscribe(value => console.log(value));
   }
 
 }
