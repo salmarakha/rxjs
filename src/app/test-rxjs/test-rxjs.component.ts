@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize, Subscription, connectable, map, tap } from 'rxjs';
+import { fromEvent, Observable, Subscriber, from, timer, interval, of, finalize, Subscription, connectable, map, tap, filter } from 'rxjs';
 
 @Component({
   selector: 'app-test-rxjs',
@@ -104,6 +104,39 @@ export class TestRxjsComponent implements OnInit {
         map(num => Math.log(num))
       )
       .subscribe(value => console.log(value));
+
+      // Filter
+      const tweets = [
+        {
+          body: "Dummy text 1",
+          user: "@angularfirebase"
+        },
+        {
+          body: "Dummy text 2",
+          user: "@angularfirebase"
+        },
+        {
+          body: "Dummy text 3",
+          user: "@google"
+        },
+        {
+          body: "Dummy text 4",
+          user: "@whatever"
+        },
+        {
+          body: "Dummy text 5",
+          user: "@twitter"
+        },
+      ];
+      const tweetsObservableUsingFrom = from(tweets);
+      tweetsObservableUsingFrom
+        .pipe(filter(tweet => tweet.user === "@angularfirebase"))
+        .subscribe(value => console.log(value)); // this will return each object individually
+
+      const tweetsObservableUsingOf = of(tweets);
+      tweetsObservableUsingOf
+        .pipe(map(tweets => tweets.filter(tweet => tweet.user === "@angularfirebase")))
+        .subscribe(value => console.log(value)); // returns an array of filtered objects
   }
 
 }
